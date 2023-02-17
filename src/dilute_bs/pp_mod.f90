@@ -164,11 +164,15 @@ contains
         end if
         if (iflow /= 1) then
           if (initmode == 'rst') then
-            open(newunit=u8,file='data/EtavsTime.dat',status='unknown',position='append')
+            open(newunit=u8,file='data/Stress_vs_Time.dat',status='unknown',position='append')
           else
-            open(newunit=u8,file='data/EtavsTime.dat',status='replace',position='append')
-          end if 
-          write(u8,*) "# Wi, dt, Time, Etap=<Taupxy>/Pe, sd<Taupxy>/Pe #"
+            open(newunit=u8,file='data/Stress_vs_Time.dat',status='replace',position='append')
+          end if
+          if (iflow < 3) then 
+            write(u8,*) "# Wi, dt, Time, <Taupxy>, sd<Taupxy>, <N1>, sd<N1>, <N2>, sd<N2> #"
+          else
+            write(u8,*) "# Wi, dt, Time, <N1>=(Taupxx-yy), sd<N1>, <N2>=(Taupyy-zz), sd<N2> #"
+          end if
           write(u8,*) "# --------------------------------------------- #"
         end if
         open (newunit=u30,file='data/QeeSq.dat',status='unknown',position='append')
@@ -468,6 +472,8 @@ contains
 8   format(i4,1x,e11.3,1x,2(f14.7,2x))
 9   format(f14.7,1x,i4,1x,e11.3,1x,3(f14.7,2x))
 10  format(f14.7,1x,i4,1x,e11.3,1x,2(f14.7,2x))
+11  format(f8.2,1x,e11.3,1x,f14.5,2x,6(f20.7,1x))
+12  format(f8.2,1x,e11.3,1x,f14.5,2x,4(f20.7,1x))
 
     if (StrCalc) then
       call conf_anlzr(q,rvmrc,Fphi,nseg_bb,id,time,idt,iPe)
@@ -733,15 +739,19 @@ contains
         if (iflow /= 1) then
           if (iflow < 3) then
             if (initmode == 'rst') then
-              write(u8,2) Wi(iPe),dt(iPe,idt),(time+trst*lambda),-tauxyTot/Pe(iPe),sdxyTot/Pe(iPe)
+              write(u8,11) Wi(iPe),dt(iPe,idt),(time+trst*lambda),-tauxyTot,sdxyTot,-tauxxyyTot,sdxxyyTot,&
+                                tauyyzzTot,sdyyzzTot 
             else
-              write(u8,2) Wi(iPe),dt(iPe,idt),time,-tauxyTot/Pe(iPe),sdxyTot/Pe(iPe)
+              write(u8,11) Wi(iPe),dt(iPe,idt),time,-tauxyTot,sdxyTot,-tauxxyyTot,sdxxyyTot,&
+                                tauyyzzTot,sdyyzzTot 
             end if
           else
             if (initmode == 'rst') then 
               write(u14,3) Pe(iPe)*(time+trst*lambda),dt(iPe,idt),-tauxxyyTot/Pe(iPe),sdxxyyTot/Pe(iPe)
+              write(u8,12) Pe(iPe),dt(iPe,idt),(time+trst*lambda),-tauxxyyTot,sdxxyyTot,tauyyzzTot,sdyyzzTot
             else
               write(u14,3) Pe(iPe)*time,dt(iPe,idt),-tauxxyyTot/Pe(iPe),sdxxyyTot/Pe(iPe)
+              write(u8,12) Pe(iPe),dt(iPe,idt),time,-tauxxyyTot,sdxxyyTot,tauyyzzTot,sdyyzzTot
             end if
           end if
         end if
